@@ -1,26 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
-function App() {
+// ページコンポーネント
+import DashBoard from './pages/DashBoard'
+import User from './pages/User'
+import Comment from './pages/Comment'
+
+// アプリケーション全体のレイアウト等の読み込み
+import AppLayout from './components/AppLayout'
+import { ThemeProvider } from '@material-ui/styles'
+import theme from './styles/theme'
+
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <ThemeProvider theme={theme}>
+      <Router>
+        <Switch>
+          <AppLayout>
+            <Route path="/" exact component={DashBoard} />
+
+            <Route path="/users/:id" exact component={User} />
+            <Route path="/users/:id/comment" exact component={Comment} />
+          </AppLayout>
+        </Switch>
+      </Router>
+    </ThemeProvider>
+  )
 }
 
-export default App;
+export default App
