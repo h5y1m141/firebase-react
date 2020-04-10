@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, makeStyles, Typography, Button } from '@material-ui/core'
+import { Grid, makeStyles, Typography, Button, Box } from '@material-ui/core'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useCollectionData } from 'react-firebase-hooks/firestore'
 
@@ -22,7 +22,7 @@ const User: React.FC = () => {
       .firestore()
       .collection(`/users/${uid}/payments`)
       .orderBy('createdAt', 'desc')
-      .limit(10)
+      .limit(20)
   )
   //
   if (loading || checking) {
@@ -71,10 +71,48 @@ const User: React.FC = () => {
     }
   }
 
+  const createPaymentsWithTransaction = async () => {
+    const items = await firebase
+      .firestore()
+      .collection(`/users/${uid}/payments`)
+      .where('price', '==', 4000)
+      .get()
+    const result = await firebase
+      .firestore()
+      .runTransaction(async transaction => {
+        const promises: Promise<any>[] = []
+        items.docs.forEach(item => {
+          const itemRef = item.ref
+          const payment = transaction.get(itemRef)
+
+          const t = payment.then(p => {
+            transaction.update(itemRef, {
+              title: '金額変更：Reactのアプリから作成した金額を5000に変更',
+              price: 5000,
+            })
+          })
+          promises.push(payment)
+        })
+        return Promise.all(promises)
+      })
+  }
+
   return (
     <>
       <Grid container justify="flex-end" className={classes.actions}>
-        <Grid item xs={12} md={12}>
+        <Grid item>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={createPaymentsWithTransaction}
+          >
+            一括支払い
+          </Button>
+        </Grid>
+        <Grid item>
+          <Box p={1} />
+        </Grid>
+        <Grid item>
           <Button variant="contained" color="secondary" onClick={createPayment}>
             支払いを作成
           </Button>
