@@ -15,6 +15,7 @@ const useStyles = makeStyles(theme => ({
 
 const User: React.FC = () => {
   const classes = useStyles({})
+  const collectionPath = `/users/Vzu2W0fgfaWCiKMSZfIdYIH0z7k1/payments`
   const [user, loading, error] = useAuthState(firebase.auth())
   const uid = user ? user.uid : ''
   const [values, checking, loadError] = useCollectionData(
@@ -71,30 +72,43 @@ const User: React.FC = () => {
     }
   }
 
+  const bulkCreatePayment = async () => {
+    try {
+      await createPaymentsWithTransaction()
+      console.log('create!')
+    } catch (e) {
+      console.log(e)
+    } finally {
+    }
+  }
+
   const createPaymentsWithTransaction = async () => {
     const items = await firebase
       .firestore()
       .collection(`/users/${uid}/payments`)
       .where('price', '==', 4000)
       .get()
-    const result = await firebase
-      .firestore()
-      .runTransaction(async transaction => {
-        const promises: Promise<any>[] = []
-        items.docs.forEach(item => {
-          const itemRef = item.ref
-          const payment = transaction.get(itemRef)
-
-          const t = payment.then(p => {
+    return firebase.firestore().runTransaction(async transaction => {
+      const promises: Promise<any>[] = []
+      items.docs.forEach(item => {
+        const itemRef = item.ref
+        const t = transaction.get(itemRef).then(p => {
+          const title = p.data()?.title
+          console.log(title)
+          if (title === '処理を中止する') {
+            console.log('処理を中止')
+            throw `index `
+          } else {
             transaction.update(itemRef, {
               title: '金額変更：Reactのアプリから作成した金額を5000に変更',
               price: 5000,
             })
-          })
-          promises.push(payment)
+          }
         })
-        return Promise.all(promises)
+        promises.push(t)
       })
+      return Promise.all(promises)
+    })
   }
 
   return (
@@ -104,7 +118,7 @@ const User: React.FC = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={createPaymentsWithTransaction}
+            onClick={bulkCreatePayment}
           >
             一括支払い
           </Button>
