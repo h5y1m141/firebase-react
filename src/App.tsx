@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import DashBoard from './pages/DashBoard'
 import User from './pages/User'
 import Comment from './pages/Comment'
+import OrderList from './pages/OrderList'
 
 // アプリケーション全体のレイアウト等の読み込み
 import AppLayout from './components/AppLayout'
@@ -20,6 +21,7 @@ const App: React.FC = () => {
             <Route path="/" exact component={DashBoard} />
 
             <Route path="/users/:id" exact component={User} />
+            <Route path="/users/:id/orders" exact component={OrderList} />
             <Route path="/users/:id/comment" exact component={Comment} />
           </AppLayout>
         </Switch>
